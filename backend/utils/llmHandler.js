@@ -20,7 +20,7 @@ async function extractInformation(searchResults, prompt) {
 
             const chatCompletion = await groq.chat.completions.create({
                 messages,
-                model: 'gemma-7b-it', // Replace with the correct model name
+                model: 'gemma2-9b-it', // Replace with the correct model name
                 temperature: 1,
                 max_tokens: 1024,
                 top_p: 1,
