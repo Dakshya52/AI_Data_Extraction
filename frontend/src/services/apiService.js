@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'http://localhost:8000', // Change to your backend URL
+  baseURL: 'https://ai-data-extraction.onrender.com', // Change to your backend URL https://ai-data-extraction.onrender.com
 });
 
 export default instance;

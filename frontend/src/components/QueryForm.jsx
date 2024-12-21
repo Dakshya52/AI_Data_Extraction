@@ -20,7 +20,7 @@ function QueryForm({ rows, setResults }) {
         }
 
         try {
-            const response = await axios.post('http://localhost:8000/search', {
+            const response = await axios.post('/search', {
                 row: JSON.parse(selectedRow),
                 prompt: prompt
             });

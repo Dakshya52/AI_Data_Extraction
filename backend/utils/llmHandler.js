@@ -22,16 +22,13 @@ async function extractInformation(rowData, userPrompt) {
             : 'No search results available';
 
         // Enhanced system prompt with both data sources
-        const systemPrompt = `Analyze the following laptop data and search results to respond to the user's query.
-
-Laptop Data:
+        const systemPrompt = `
 ${formattedRowData}
 
 ${formattedSearchResults}
 
 User Query: ${userPrompt}
-
-Please provide a comprehensive analysis incorporating both the laptop specifications and relevant search findings.`;
+`;
 
         const completion = await groq.chat.completions.create({
             messages: [
