@@ -1,24 +1,25 @@
 import React from 'react';
 import axios from '../services/apiService';
-
-function FileUploader({ setColumns }) {
+function FileUploader({ setColumns, setRows }) {
   const handleFileChange = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return; // Prevent proceeding if no file is selected
+      const file = event.target.files[0];
+      if (!file) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
+      const formData = new FormData();
+      formData.append('file', file);
 
-    try {
-      const response = await axios.post('/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      setColumns(response.data.columns || []);
-    } catch (error) {
-      console.error('Error uploading file:', error);
-    }
+      try {
+          const response = await axios.post('/upload', formData, {
+              headers: {
+                  'Content-Type': 'multipart/form-data',
+              },
+          });
+          
+          setColumns(response.data.columns || []);
+          setRows(response.data.preview || []); // Now contains all rows
+      } catch (error) {
+          console.error('Error uploading file:', error);
+      }
   };
 
   return (

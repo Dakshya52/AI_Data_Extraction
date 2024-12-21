@@ -20,22 +20,26 @@ let uploadedData = []; // Store the uploaded data temporarily
 app.post('/upload', upload.single('file'), async (req, res) => {
     try {
         const filePath = req.file.path;
-        const data = await processFile(filePath);
-
-        // Load data into memory for subsequent operations
-        uploadedData = [];
         const rows = [];
-        const fileStream = await fs.createReadStream(filePath).pipe(csv());
+        
+        // Read all rows from CSV
+        await new Promise((resolve, reject) => {
+            fs.createReadStream(filePath)
+                .pipe(csv())
+                .on('data', (row) => rows.push(row))
+                .on('end', () => {
+                    const columns = Object.keys(rows[0] || {});
+                    res.json({
+                        columns: columns,
+                        preview: rows // Send all rows instead of just preview
+                    });
+                    resolve();
+                })
+                .on('error', reject);
+        });
 
-        fileStream.on('data', (row) => rows.push(row));
-        fileStream.on('end', () => {
-            uploadedData = rows;
-            res.json({ columns: data.columns, preview: data.preview });
-        });
-        fileStream.on('error', (error) => {
-            console.error('Error reading file:', error);
-            res.status(500).json({ error: 'Failed to process file' });
-        });
+        // Clean up uploaded file
+        fs.unlinkSync(filePath);
     } catch (error) {
         console.error('Error processing file:', error);
         res.status(500).json({ error: 'Failed to process file' });
@@ -43,42 +47,35 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 });
 
 // Endpoint to get unique values for a selected column
-app.post('/get-unique-values', (req, res) => {
-    const { column } = req.body;
+app.post('/get-unique-rows', (req, res) => {
     if (!uploadedData.length) {
         return res.status(400).json({ error: 'No data available' });
     }
-    if (!column) {
-        return res.status(400).json({ error: 'Column is required' });
-    }
 
-    // Extract unique values for the selected column
-    const uniqueValues = [...new Set(uploadedData.map(row => row[column]))];
-    res.json({ values: uniqueValues });
+    // Return all rows for selection
+    res.json({ rows: uploadedData });
 });
 
 // Endpoint to perform search and extract data using LLM integration
 app.post('/search', async (req, res) => {
     try {
-        const { column, value, prompt } = req.body;
+        const { row, prompt } = req.body;
+        
+        if (!row || !prompt) {
+            return res.status(400).json({ error: 'Missing row data or prompt' });
+        }
 
-        // Filter data for the selected value in the specified column
-        // const filteredData = uploadedData.filter(row => row[column] === value);
-        // console.log('Filtered data:', filteredData);
-        // Perform a search using the filtered data
-        console.log('Performing search for:', value, 'in column:', column)
-        const searchResults = await performSearch(value,column, prompt);
-
-        // Process and extract information using the LLM handler
-        const extractedData = await extractInformation(searchResults, prompt);
-
-        res.json({ results: extractedData });
+        // Direct LLM processing without search
+        const result = await extractInformation(row, prompt);
+        
+        res.json({ 
+            results: [result]  // Wrap in array to maintain compatibility
+        });
     } catch (error) {
-        console.error('Error performing search or extracting data:', error);
-        res.status(500).json({ error: 'Failed to process search or data extraction' });
+        console.error('Error processing request:', error);
+        res.status(500).json({ error: 'Failed to process request' });
     }
 });
-
 // Start the Express server
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
