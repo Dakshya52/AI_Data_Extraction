@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../services/apiService';
 
 function QueryForm({ rows, setResults }) {
     const [selectedRow, setSelectedRow] = useState('');
@@ -27,7 +27,7 @@ function QueryForm({ rows, setResults }) {
             setResults(response.data.results);
         } catch (error) {
             console.error('Error performing search:', error);
-            alert('Error performing search. Please try again.');
+            alert('Error performing search. Please try again.',error);
         }
     };
 
