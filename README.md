@@ -1,6 +1,6 @@
 # Data Extraction and Processing Application
 
-![AI Data Extraction Dashboard](./images/image.png)
+![](./images/image.png)
 ![AI Data Extraction Dashboard](./images/image2.png)
 ![AI Data Extraction Dashboard](./images/image3.png)
 
